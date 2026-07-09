@@ -18,7 +18,7 @@
 
 ## 🔑 Headline finding — for Diffusion, `eval_loss` is a misleading overfit signal
 
-> For the **Diffusion Policy**, held-out **denoising `eval_loss` ROSE** (0.0289 @ 4k → 0.0673 @ 44k — textbook "overfit") while the deployment-relevant **open-loop rollout MAE kept IMPROVING**. The denoising loss scores noise prediction at random diffusion timesteps, not sampled-action accuracy, so the two decorrelate. **Select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** For **ACT the two signals agreed** (open-loop best ≈ 30k).
+> For the **Diffusion Policy**, held-out **denoising `eval_loss` ROSE** (0.0289 @ 4k → 0.1487 @ 80k — textbook "overfit", 5×) while the deployment-relevant **open-loop rollout MAE kept IMPROVING and then plateaued** (poseMAE 0.1193 @ 10k → 0.0845 @ 80k). The denoising loss scores noise prediction at random diffusion timesteps, not sampled-action accuracy, so the two decorrelate. Over the **full 80k run there was NO open-loop overfitting** — best checkpoint = **80k**. **Select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** For **ACT the two signals agreed** (open-loop best ≈ 30k).
 
 JOINT diffusion, open-loop DDIM-10 on held-out eps 45–50 (`eval_offline.py`, radians):
 
@@ -27,7 +27,9 @@ JOINT diffusion, open-loop DDIM-10 on held-out eps 45–50 (`eval_offline.py`, r
 | 10k | 0.1193 | 0.729 |
 | 20k | 0.1037 | 0.888 |
 | 30k | 0.0921 | 0.919 |
-| **40k** | **0.0907** | **0.949** |
+| 40k | 0.0907 | 0.949 |
+| 60k | 0.0849 | 0.944 |
+| **80k** | **0.0845** | **0.953** |
 
 Full analysis → **[docs/DIFFUSION_JOINT_OVERFIT.md](docs/DIFFUSION_JOINT_OVERFIT.md)**.
 
@@ -54,8 +56,8 @@ setsid nohup ./train_diffusion_joint_valdiag.sh </dev/null >train.log 2>&1 &
 
 # 6. Offline eval + checkpoint selection (DDIM-10 open-loop on held-out eps 45–50)
 ./lr_env/bin/python eval_offline.py \
-    --checkpoint outputs/train/diffusion_joint_val_diag/checkpoints/040000/pretrained_model \
-    --episodes 45,46,47,48,49,50 --device cuda --out eval_out_40k
+    --checkpoint outputs/train/diffusion_joint_val_diag/checkpoints/080000/pretrained_model \
+    --episodes 45,46,47,48,49,50 --device cuda --out eval_out_80k
 ```
 
 > `setsid` returns a **wrapper** pid — find the real training pid with `pgrep -f 'lerobot-train.*diffusion_joint'`. Every must-not-remove flag (`--policy.resize_shape='[360,640]'`, `--policy.drop_n_last_frames=31`, `--dataset.eval_split=0.117`) and the detached-launch gotcha are in **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)**.

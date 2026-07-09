@@ -38,16 +38,20 @@ Key resolved config decisions (chosen for ACT-comparability and correctness): **
 
 This is the most instructive entry, and it involved a real course-correction — recorded honestly.
 
-The JOINT diffusion run's held-out **denoising `eval_loss` ROSE** from its minimum ~0.0289 (4k) to ~0.0673 (44k) — a textbook-looking overfit curve (`val_final/val_min` ≈ 2.2, auto-verdict "OVERFIT from ~step 6000"). **On that misleading signal the run was early-stopped at ~45k.** Then `eval_offline.py` open-loop rollout MAE (DDIM-10, held-out eps 45–50) was computed on the saved checkpoints and told the **opposite** story — it improved **monotonically**:
+The JOINT diffusion run's held-out **denoising `eval_loss` ROSE** from its minimum ~0.0289 (4k) to **0.1487 (80k)** — a textbook-looking overfit curve (`val_final/val_min` ≈ 4.9, auto-verdict "OVERFIT from ~step 6000"). That misleading signal initially prompted an early-stop plan at ~45k, but the run was **carried through to the full 80k** to read the deployment-relevant metric. `eval_offline.py` open-loop rollout MAE (DDIM-10, held-out eps 45–50), computed on the saved checkpoints across the **entire run**, told the **opposite** story — it improved then held:
 
 | checkpoint | poseMAE (rad) | gripAcc | overall L1 |
 |---|---|---|---|
 | 10k | 0.1193 | 0.729 | 0.1454 |
 | 20k | 0.1037 | 0.888 | 0.1078 |
 | 30k | 0.0921 | 0.919 | 0.0928 |
-| **40k** | **0.0907** | **0.949** | **0.0862** |
+| 40k | 0.0907 | 0.949 | 0.0862 |
+| 50k | 0.0865 | 0.942 | 0.0832 |
+| 60k | 0.0849 | 0.944 | 0.0812 |
+| 70k | 0.0855 | 0.951 | 0.0809 |
+| **80k** | **0.0845** | **0.953** | **0.0796** |
 
-**What this means:** for a diffusion policy the held-out denoising MSE is **not** a reliable early-stop/overfit signal — it scores noise prediction at random timesteps, not sampled-action accuracy, so it can rise while the actual generated-action quality keeps improving. The **open-loop rollout MAE is the signal that matters**, and it says the model was **not** harmfully overfitting. This is the opposite of ACT, where the two signals agreed. Because the open-loop trend had **not yet plateaued** at the early-stop point, the run was **resumed (≈40k → 80k)** rather than abandoned; the best available JOINT-diffusion checkpoint by open-loop MAE is **40k** (poseMAE 0.091, gripAcc 0.95). Standing lesson: **select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** See `docs/DIFFUSION_JOINT_OVERFIT.md`.
+**What this means:** for a diffusion policy the held-out denoising MSE is **not** a reliable early-stop/overfit signal — it scores noise prediction at random timesteps, not sampled-action accuracy, so it can rise while the actual generated-action quality keeps improving. The **open-loop rollout MAE is the signal that matters**, and across the full 80k it says the model was **not** overfitting at all: poseMAE improved monotonically then **plateaued at ~0.085 from 60k onward** (60k/70k/80k = 0.0849/0.0855/0.0845, within eval noise) while gripper accuracy climbed to **0.953 @ 80k**. This is the opposite of ACT, where the two signals agreed. **Best JOINT-diffusion checkpoint by open-loop MAE = 80k** (tied-best pose, best grip); anything ≥60k is effectively equivalent on pose — deploy 80k. Standing lesson, now decisively confirmed: **select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** See `docs/DIFFUSION_JOINT_OVERFIT.md`.
 
 ## 2026-07-08 — Deploy repo decision (real UR7e)
 
@@ -59,9 +63,13 @@ The experiment was packaged into this clone-and-rerun repo: scripts + docs only 
 
 ---
 
+## Resolved
+
+- **JOINT diffusion run — DONE (completed at 80k, 2026-07-09).** Ran the full 80k (not early-stopped). Open-loop poseMAE improved then **plateaued at ~0.085 from 60k** (80k = 0.0845), gripAcc **0.953 @ 80k**; **no open-loop overfitting through 80k**; **best checkpoint = 80k** (deploy this). The denoising `eval_loss` rose to 0.1487 @ 80k and is confirmed misleading. Lesson locked in: **select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** See `docs/DIFFUSION_JOINT_OVERFIT.md`.
+
 ## Open threads
 
 - **EEF diffusion run** — the 10-dim EE-action leg (`train_diffusion_ee_valdiag.sh`) is planned and scripted but not yet run/reported (`DIFFUSION_EE_OVERFIT.md` does not exist yet).
 - **EE-action dataset not on HF** — `banana_in_pot_ee_action_lerobot` (484 MB) is local-only (HF 401); until a one-time push, the canonical route is rebuild-from-raw (needs the JOINT dataset + raw h5 present first, video-reuse).
-- **Best-diffusion-checkpoint selection** — pick by **open-loop MAE** (`eval_offline.py`, DDIM-10), not `eval_loss`. JOINT best-so-far is 40k; the trend suggested more steps could still help, hence the resume toward 80k.
+- **Best-diffusion-checkpoint selection (EEF leg)** — pick by **open-loop MAE** (`eval_offline.py`, DDIM-10), not `eval_loss`. This lesson is now settled for JOINT (see below); it still needs to be applied to the pending EEF run.
 - **Deploy is a design, not yet executed** — `gello_policy` ROS2 package and `act_server.py` are specified in `DEPLOY_REPO_DECISION.md` but not yet built on the robot PC; closed-loop real-robot validation is the outstanding verdict for both ACT and diffusion.

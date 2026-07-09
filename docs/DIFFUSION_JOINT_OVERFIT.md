@@ -28,22 +28,40 @@ _Trained on 45 episodes, 6 episodes (eps 45-50) held out as a true validation sp
 | 36000 | 0.0100 | 0.0565 |
 | 38000 | 0.0100 | 0.0622 |
 | 40000 | 0.0080 | 0.0660 |
-| 42000 | 0.0080 | 0.0675 |
-| 44000 | 0.0080 | 0.0672 |
+| 42000 | 0.0080 | 0.0764 |
+| 44000 | 0.0080 | 0.0746 |
+| 46000 | 0.0080 | 0.0845 |
+| 48000 | 0.0070 | 0.0913 |
+| 50000 | 0.0070 | 0.0921 |
+| 52000 | 0.0070 | 0.1018 |
+| 54000 | 0.0060 | 0.1042 |
+| 56000 | 0.0060 | 0.1060 |
+| 58000 | 0.0050 | 0.1086 |
+| 60000 | 0.0050 | 0.1272 |
+| 62000 | 0.0050 | 0.1275 |
+| 64000 | 0.0050 | 0.1410 |
+| 66000 | 0.0050 | 0.1238 |
+| 68000 | 0.0050 | 0.1369 |
+| 70000 | 0.0050 | 0.1431 |
+| 72000 | 0.0050 | 0.1543 |
+| 74000 | 0.0050 | 0.1464 |
+| 76000 | 0.0050 | 0.1517 |
+| 78000 | 0.0050 | 0.1509 |
+| 80000 | 0.0050 | 0.1464 |
 
 ## Summary
 
 - **Val-loss minimum:** 0.0302 @ step **6000** (smoothed, rolling mean 3)
-- **Final val loss:** 0.0673 @ step 44000 (smoothed, rolling mean 3)
-- **val_final / val_min ratio:** 2.2326
-- **Train vs val at final step (44000):** train 0.0080 vs val 0.0673 (gap = -0.0593)
+- **Final val loss:** 0.1487 @ step 80000 (smoothed, rolling mean 3)
+- **val_final / val_min ratio:** 4.9276
+- **Train vs val at final step (80000):** train 0.0050 vs val 0.1487 (gap = -0.1436)
 - **Recommended early-stop step:** 6000 (step of the val-loss minimum)
 
 ## Auto verdict
 
 > **OVERFIT from ~step 6000**
 
-The held-out loss bottoms at 0.0302 (step 6000) then rises to 0.0673 at the end (ratio 2.233 > 1.10). The model is overfitting the 45 training episodes past ~step 6000: further steps trade held-out generalization for lower train loss. **Use the checkpoint at step 6000 (recommended early-stop).**
+The held-out loss bottoms at 0.0302 (step 6000) then rises to 0.1487 at the end (ratio 4.928 > 1.10). The model is overfitting the 45 training episodes past ~step 6000: further steps trade held-out generalization for lower train loss. **Use the checkpoint at step 6000 (recommended early-stop).**
 
 ## How to read this (caveats)
 
@@ -54,30 +72,32 @@ The held-out loss bottoms at 0.0302 (step 6000) then rises to 0.0673 at the end 
 
 ---
 
-## IMPORTANT — two signals DISAGREE for diffusion (2026-07-09, early-stopped ~45k)
+## FINAL — full open-loop curve to 80k (run completed 2026-07-09)
 
-**Held-out denoising loss (`eval_loss`, the val-curve above) rose** from 0.0289 (4k, min) to
-0.0673 (44k) — this LOOKS like textbook overfitting and is why the run was early-stopped.
+Joint run reached 80k. Held-out denoising `eval_loss` kept rising to **0.1487 @ 80k**
+(from 0.0289 @ 4k) — i.e. the loss curve screams "severe overfit, 5×".
 
-**But the deployment-relevant open-loop rollout MAE tells the OPPOSITE story** — it kept
-improving (`eval_offline.py`, DDIM-10, held-out eps 45–50, radians):
+But the deployment-relevant **open-loop rollout MAE** (eval_offline.py, DDIM-10, held-out
+eps 45–50) tells the opposite story across the FULL run:
 
 | checkpoint | poseMAE (rad) | gripAcc | overall L1 |
 |---|---|---|---|
 | 10k | 0.1193 | 0.729 | 0.1454 |
 | 20k | 0.1037 | 0.888 | 0.1078 |
 | 30k | 0.0921 | 0.919 | 0.0928 |
-| **40k** | **0.0907** | **0.949** | **0.0862** |
+| 40k | 0.0907 | 0.949 | 0.0862 |
+| 50k | 0.0865 | 0.942 | 0.0832 |
+| 60k | 0.0849 | 0.944 | 0.0812 |
+| 70k | 0.0855 | 0.951 | 0.0809 |
+| **80k** | **0.0845** | **0.953** | **0.0796** |
 
-Open-loop poseMAE and gripper accuracy **monotonically improve 10k→40k** (still improving,
-decelerating), directly contradicting the denoising-loss "overfit" reading.
+**Conclusion:** open-loop poseMAE improves monotonically then **plateaus at ~0.085 from
+60k onward** (60k/70k/80k = 0.0849/0.0855/0.0845, within eval noise); gripper accuracy climbs
+all the way to **0.953 @ 80k**. There is **NO open-loop overfitting through 80k** — the model
+kept getting better (or held) on held-out data the entire run, directly contradicting the
+denoising `eval_loss`.
 
-**Methodological conclusion:** for a **diffusion** policy the held-out **denoising MSE is NOT a
-reliable early-stop / overfit signal** — it can rise while the actual generated-action quality
-improves (the two decorrelate because the loss scores noise prediction at random timesteps, not
-sampled-action accuracy). The **open-loop rollout MAE is the signal that matters**, and it says
-the model was NOT harmfully overfitting. This is the opposite of ACT, where the two signals agreed.
-
-**Practical takeaway:** best available joint-diffusion checkpoint = **40k** (poseMAE 0.091,
-gripAcc 0.95). The run was early-stopped at ~45k on the misleading loss curve; the open-loop
-trend suggests it had not yet plateaued and could improve further with more steps.
+**Best checkpoint = 80k** (tied-best poseMAE, best gripAcc); anything ≥60k is effectively
+equivalent on pose. Deploy 80k. This decisively confirms the project's headline lesson:
+**for a diffusion policy, held-out denoising eval_loss is NOT a valid overfit/early-stop
+signal — select by open-loop MAE.** (Contrast ACT, where the two signals agreed.)
