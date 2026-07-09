@@ -2,7 +2,7 @@
 
 _Trained on 45 episodes, 6 episodes (eps 45-50) held out as a true validation split. Train loss logged every 200 steps; held-out eval loss every 2000 steps._
 
-![overfit diagnostic](report_assets/diffusion_joint_overfit_diag.png)
+![overfit diagnostic](../results/report_assets/diffusion_joint_overfit_diag.png)
 
 ## Held-out eval points
 

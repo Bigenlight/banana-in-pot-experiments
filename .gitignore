@@ -12,9 +12,9 @@ banana_in_pot_ee_action_lerobot/
 Put_right_banana_in_the_pot/
 
 # training outputs & staging (26 GB / 712 MB / 83 MB here)
-outputs/
-hf_upload/
-hilserl/
+/outputs/
+/hf_upload/
+/hilserl/
 
 # caches & logs
 torch_home/

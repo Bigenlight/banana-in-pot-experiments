@@ -46,7 +46,7 @@
   그리퍼 critic이 처리함. 따라서 policy `output_features["action"].shape = [3]`,
   `num_discrete_actions = 3` (아래 config 참조).
 
-![action / reward 통계](hilserl/rl_dataset_action_reward.png)
+![action / reward 통계](../results/hilserl/rl_dataset_action_reward.png)
 *좌: EE-delta 분포(÷0.05 m). p99≈0.2로 tanh 범위 [-1,1] 안에 여유롭게 들어옴 (|Δ|>1 비율 = 0%).
 중: 그리퍼 이산 클래스 카운트(close 245 / stay 21,046 / open 233). 우: ep0 보상 타임라인.*
 
@@ -67,10 +67,10 @@ q50≈`[0.003,-0.001,-0.010]`, q99≈`[0.086,0.183,0.210]`, `|Δ|>1` = **0.0%**.
 | Train accuracy (balanced) | 100% |
 | Confusion (val, thr 0.5) | TP=231, TN=1138, FP=5, FN=2 |
 
-![training curves](hilserl/reward_classifier/training_curves.png)
+![training curves](../results/hilserl/reward_classifier/training_curves.png)
 *8 epoch, AdamW lr 1e-4, batch 32, RTX 3060. frozen ResNet10 + classifier head(공식 no_grad 방식).*
 
-![confusion matrix](hilserl/reward_classifier/confusion_matrix.png)
+![confusion matrix](../results/hilserl/reward_classifier/confusion_matrix.png)
 *Val 혼동행렬. HIL-SERL에는 `success_threshold=0.7`로 투입(release 경계 여유 확보).*
 
 > **주의:** 진짜 실패 에피소드가 없어(음성은 초반 프레임) 완성-유사 OOD 상태에 과신할 수 있음.
@@ -92,7 +92,7 @@ FK를 직접 구현(placo-free) 후 기록된 `tcp_pose`와 대조 검증.
 (joint vs tcp) 사이의 타이밍 지터(속도와 0.61 상관) — FK 오차 아님. deploy IK는 placo(Pinocchio),
 frame `tool0`, I/O 단위 degree.
 
-![FK 검증](hilserl/fk_validation.png)
+![FK 검증](../results/hilserl/fk_validation.png)
 *좌상: FK(주황)가 기록 TCP(파랑)의 깨끗한 위상지연 복제 = chain 정확, 오차는 로깅 타이밍 아티팩트.*
 
 UR7e URDF는 `hilserl/ur7e.urdf`로 사전 생성 완료(`tool0` 링크 포함, 27 link/joint).

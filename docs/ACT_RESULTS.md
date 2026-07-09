@@ -16,11 +16,11 @@
 | GPU | RTX 3060 12GB (~4.7GB 사용, ~3.9 step/s) |
 
 ## 학습 loss 곡선
-![training loss](report_assets/loss_curve.png)
+![training loss](../results/report_assets/loss_curve.png)
 *점선 = 체크포인트 저장 지점.*
 
 ## 체크포인트별 오프라인 평가 (open-loop: 예측 액션 vs 정답)
-![eval trend](report_assets/eval_trend.png)
+![eval trend](../results/report_assets/eval_trend.png)
 *train 에피소드와 held-out 에피소드의 오차가 거의 같음 = 과적합 없음 / 일반화됨.*
 
 | step | joints MAE (rad) | overall L1 | gripper acc | train L1 | held-out L1 |
@@ -34,12 +34,12 @@
 ⭐ = held-out 기준 최적 체크포인트 (step 50000).
 
 ## 관절별 오차 (최적 체크포인트)
-![per-joint MAE](report_assets/perjoint_best.png)
+![per-joint MAE](../results/report_assets/perjoint_best.png)
 *손목(cmd6)이 상대적으로 큼 — 원래 변동이 큰 축. 그리퍼는 이진에 가까움.*
 
 ## 예측 vs 정답 궤적 (샘플 에피소드)
-![trajectory eval_ep0_traj.png](eval_out_50k/eval_ep0_traj.png)
-![trajectory eval_ep1_traj.png](eval_out_50k/eval_ep1_traj.png)
+![trajectory eval_ep0_traj.png](../results/eval_out_50k/eval_ep0_traj.png)
+![trajectory eval_ep1_traj.png](../results/eval_out_50k/eval_ep1_traj.png)
 *파랑=정답(teleop), 주황=ACT 예측. 7개 액션 차원.*
 
 ## 해석 / 데이터셋 판정

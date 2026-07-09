@@ -8,6 +8,8 @@
 - **51 episodes · 21,524 frames · 30 fps · ~11.96 min · 483 MB**
 - Converter: `./convert_to_lerobot.py` · venv: `./lr_env` (activate its python for anything lerobot)
 
+> **Note on `robot_type`:** the stored metadata string is `ur5e_gello`, but the physical robot is a **UR7e** (confirmed by the HF dataset card, `ACT_RESULTS.md`, and the DEPLOY docs). `ur5e_gello` is a legacy/default token carried over from the GELLO tooling, not the true hardware — the actual arm is a UR7e.
+
 ## Schema
 | key | dtype | shape | contents |
 |---|---|---|---|
