@@ -1,0 +1,11 @@
+# Diffusion JOINT open-loop offline eval (eval_offline.py, DDIM-10, held-out eps 45-50, n=2717 frames)
+# poseMAE in radians; gripAcc = gripper-state accuracy; overallL1 = mean L1 over all action dims
+checkpoint,poseMAE,gripAcc,overallL1
+10000,0.11931,0.729,0.14536
+20000,0.10371,0.888,0.10775
+30000,0.09213,0.919,0.09280
+40000,0.09071,0.949,0.08624
+50000,0.08645,0.942,0.08322
+60000,0.08493,0.944,0.08119
+70000,0.08554,0.951,0.08094
+80000,0.08450,0.953,0.07958
