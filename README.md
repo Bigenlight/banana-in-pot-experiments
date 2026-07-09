@@ -6,6 +6,8 @@
 
 <sub>Physical setup: a **UR7e** arm (right) teleoperated by a **GELLO** leader arm, with two RGB cameras viewing the banana / pot workspace. Same photos as the top of the HF dataset card.</sub>
 
+**Demo video:** https://youtu.be/B3uFWIv8q9k?si=N0IXjRAhibsqBeeI
+
 ---
 
 ## What this is
