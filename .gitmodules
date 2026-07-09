@@ -1,0 +1,4 @@
+[submodule "gello_software"]
+	path = gello_software
+	url = git@github.com:Bigenlight/gello_software.git
+	branch = feat/gello-ur7e-humble-22.04

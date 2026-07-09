@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# OVERFIT DIAGNOSTIC run for Diffusion Policy (EEF / EE 10-dim action space) on banana_in_pot.
+# Identical to train_diffusion_joint_valdiag.sh except the dataset (theo/banana_in_pot_ee_action,
+# root ./banana_in_pot_ee_action_lerobot) and job_name/output_dir. Action dim 10 (xyz 3 + 6D 6
+# + grip 1) and state dim 10 are auto-derived from the dataset features; per-dim MIN_MAX stats
+# come from the new dataset. Same 100k / batch-8 / no-crop / drop_n_last_frames=31 settings.
+# NOTE: diffusion held-out loss is STOCHASTIC (random noise+timestep per forward);
+# interpret via smoothed trend, not single points.
+set -euo pipefail
+cd "$(dirname "$(readlink -f "$0")")"
+
+SC="${SCRATCH_DIR:-$PWD/.cache}"
+mkdir -p "$SC/torch_home" "$SC/hf_lerobot_home"
+export TORCH_HOME="$SC/torch_home"
+export HF_LEROBOT_HOME="$SC/hf_lerobot_home"
+export HF_HUB_OFFLINE=1
+
+exec ./lr_env/bin/lerobot-train \
+  --dataset.repo_id=theo/banana_in_pot_ee_action \
+  --dataset.root=./banana_in_pot_ee_action_lerobot \
+  --dataset.eval_split=0.117 \
+  --policy.type=diffusion \
+  --policy.device=cuda \
+  --policy.push_to_hub=false \
+  --policy.drop_n_last_frames=31 \
+  --policy.resize_shape='[360,640]' \
+  --dataset.image_transforms.enable=true \
+  --dataset.image_transforms.max_num_transforms=1 \
+  --dataset.image_transforms.tfs='{"resize":{"weight":1.0,"type":"Resize","kwargs":{"size":[360,640]}}}' \
+  --batch_size=8 \
+  --steps=100000 \
+  --save_freq=10000 \
+  --eval_steps=2000 \
+  --log_freq=200 \
+  --num_workers=4 \
+  --seed=1000 \
+  --wandb.enable=false \
+  --job_name=diffusion_ee_val_diag \
+  --output_dir=outputs/train/diffusion_ee_val_diag
