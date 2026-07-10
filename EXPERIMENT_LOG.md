@@ -61,15 +61,23 @@ In parallel, the real-robot deploy architecture was decided (2026-07-08): **exte
 
 The experiment was packaged into this clone-and-rerun repo: scripts + docs only (~200 KB tracked), with **`gello_software` as a git submodule** (we own it, pinned @ `0730fb42`), **lerobot as a setup-script pinned clone** (@ `8a74e0a` = 0.6.1, gitignored), datasets/models **fetched from HF or rebuilt** (`fetch_data.sh`), and a committed **`requirements-lock.txt`** (uv venv, Python 3.12.3, 119 packages) driven by `setup.sh`. The JOINT dataset, raw data, EE-obs dataset, and ACT model are public on HF under `Bigenlight/*`; the 10-dim EE-action dataset and the val-diag checkpoints are local-only and rebuilt/re-trained. The one mandatory fix before cross-PC use: every train script and `eval_offline.py` hardcodes absolute `cd` and scratchpad paths that must be parameterized. See `REPRODUCIBILITY_PLAN.md`.
 
+## 2026-07-10 — EEF diffusion run to 100k + diffusion deploy built + EE model on HF
+
+The EEF diffusion leg (10-dim EE-action, `train_diffusion_ee_valdiag.sh`) was run to completion at **100k steps**. It reconfirms the JOINT finding on a second action space: held-out `eval_loss` rose (0.0250 @8k min → 0.112 @100k, auto-verdict "overfit@8k") while open-loop rollout MAE (`eval_offline.py`, DDIM-10, held-out eps 45–50) improved then plateaued — poseMAE 0.0665 @10k → 0.0368 plateau from ~70k (min 0.03674 @80k), gripAcc 0.886 → 0.966 @100k, overallL1 minimum 0.03754 @100k. **No destructive overfit through 100k; best = the 80k–100k plateau (deploy 100k).** Note EE's `poseMAE` mixes meters + 6D-rotation units, so it is not comparable to JOINT's radian `poseMAE`. Full write-up: `docs/DIFFUSION_EE_OVERFIT.md`.
+
+In parallel, the **diffusion real-robot deploy package was built** in the `gello_software` submodule (commit `8161af6`): a Python 3.12 Diffusion Policy ZMQ server reusing the existing ROS2 leader/bridge (Option-Bridge split), DDIM-10 sampling, mirroring the ACT deploy architecture (`GELLO_UR7E_ACT_DEPLOY.md`). Runbook: `gello_software/docs/ros2/GELLO_UR7E_DIFFUSION_DEPLOY.md`. It has been verified **offline only** — a CPU end-to-end ZMQ round-trip — and has not yet been run on the real arm, built on the robot-PC colcon workspace, or GPU-latency-benchmarked.
+
+The EE (10-D) diffusion model was uploaded to Hugging Face as `Bigenlight/diffusion_banana_in_pot_ee` (research artifact — 10-D action needs inverse kinematics to actuate, so it is not wired to the robot; the deployed model remains the 7-D JOINT policy).
+
 ---
 
 ## Resolved
 
 - **JOINT diffusion run — DONE (completed at 80k, 2026-07-09).** Ran the full 80k (not early-stopped). Open-loop poseMAE improved then **plateaued at ~0.085 from 60k** (80k = 0.0845), gripAcc **0.953 @ 80k**; **no open-loop overfitting through 80k**; **best checkpoint = 80k** (deploy this). The denoising `eval_loss` rose to 0.1487 @ 80k and is confirmed misleading. Lesson locked in: **select diffusion checkpoints by open-loop MAE, never by `eval_loss`.** See `docs/DIFFUSION_JOINT_OVERFIT.md`.
+- **EEF diffusion run — DONE (completed at 100k, 2026-07-10).** Same lesson as JOINT: held-out `eval_loss` rose 0.0250 @8k → 0.112 @100k (misleading "overfit@8k") while open-loop poseMAE improved then **plateaued from ~70k** (min 0.03674 @80k), gripAcc climbed to **0.966 @100k**; **no open-loop overfitting through 100k**; **best = 80k–100k plateau (deploy 100k)**. EE `poseMAE` mixes meters + 6D-rotation units and is not comparable to JOINT's radian `poseMAE`. See `docs/DIFFUSION_EE_OVERFIT.md`.
+- **Diffusion real-robot deploy — package BUILT, offline-verified (2026-07-10).** The `gello_policy` diffusion ZMQ server (py3.12, DDIM-10, mirrors the ACT deploy) is committed to `gello_software` @ `8161af6`; verified end-to-end over the ZMQ round-trip on CPU only. Runbook: `gello_software/docs/ros2/GELLO_UR7E_DIFFUSION_DEPLOY.md`. Real-arm / robot-PC colcon build / GPU-latency benchmark still pending.
 
 ## Open threads
 
-- **EEF diffusion run** — the 10-dim EE-action leg (`train_diffusion_ee_valdiag.sh`) is planned and scripted but not yet run/reported (`DIFFUSION_EE_OVERFIT.md` does not exist yet).
 - **EE-action dataset not on HF** — `banana_in_pot_ee_action_lerobot` (484 MB) is local-only (HF 401); until a one-time push, the canonical route is rebuild-from-raw (needs the JOINT dataset + raw h5 present first, video-reuse).
-- **Best-diffusion-checkpoint selection (EEF leg)** — pick by **open-loop MAE** (`eval_offline.py`, DDIM-10), not `eval_loss`. This lesson is now settled for JOINT (see below); it still needs to be applied to the pending EEF run.
-- **Deploy is a design, not yet executed** — `gello_policy` ROS2 package and `act_server.py` are specified in `DEPLOY_REPO_DECISION.md` but not yet built on the robot PC; closed-loop real-robot validation is the outstanding verdict for both ACT and diffusion.
+- **Deploy package built, real-arm run still pending** — the diffusion `gello_policy` ZMQ server (mirrors ACT) is committed to `gello_software` @ `8161af6` and verified **offline only** (CPU end-to-end ZMQ round-trip); closed-loop real-robot validation is the outstanding verdict for both ACT and diffusion.

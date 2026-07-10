@@ -35,6 +35,27 @@ JOINT diffusion, open-loop DDIM-10 on held-out eps 45–50 (`eval_offline.py`, r
 
 Full analysis → **[docs/DIFFUSION_JOINT_OVERFIT.md](docs/DIFFUSION_JOINT_OVERFIT.md)**.
 
+### EE (10-D) diffusion results — same lesson, now DONE at 100k
+
+The **EEF** leg (10-D: xyz + 6D-rotation + gripper) confirms the identical pattern: held-out `eval_loss` **rose** 0.0250 @8k → 0.112 @100k (auto-verdict "overfit@8k", misleading) while **open-loop rollout MAE improved then plateaued — NO destructive overfit through 100k.**
+
+EE diffusion, open-loop DDIM-10 on held-out eps 45–50 (own-scale units — mixes meters + 6D rotation, **not comparable** to JOINT's radian poseMAE):
+
+| checkpoint | poseMAE (own scale) | gripAcc | overallL1 |
+|---|---|---|---|
+| 10k | 0.0665 | 0.886 | 0.0752 |
+| 20k | 0.0450 | 0.923 | 0.0503 |
+| 30k | 0.0435 | 0.930 | 0.0484 |
+| 40k | 0.0400 | 0.926 | 0.0444 |
+| 50k | 0.0379 | 0.942 | 0.0413 |
+| 60k | 0.0390 | 0.950 | 0.0413 |
+| 70k | 0.0369 | 0.956 | 0.0385 |
+| 80k | **0.0367** (min) | 0.961 | 0.0377 |
+| 90k | 0.0372 | 0.955 | 0.0386 |
+| **100k** | 0.0372 | **0.966** | **0.0375** (min) |
+
+**Best = 80k–100k plateau (deploy 100k)** — poseMAE bottoms at 80k but is within noise through 100k, and 100k gives the best gripper accuracy and overall-L1. Full analysis → **[docs/DIFFUSION_EE_OVERFIT.md](docs/DIFFUSION_EE_OVERFIT.md)**.
+
 ---
 
 ## 🚀 Quickstart
@@ -75,10 +96,12 @@ setsid nohup ./train_diffusion_joint_valdiag.sh </dev/null >train.log 2>&1 &
 
 **Hugging Face models**
 - [`Bigenlight/act_banana_in_pot`](https://huggingface.co/Bigenlight/act_banana_in_pot) — pretrained ACT policy
+- [`Bigenlight/diffusion_banana_in_pot_joint`](https://huggingface.co/Bigenlight/diffusion_banana_in_pot_joint) — pretrained JOINT (7-D) diffusion policy, deployed
+- [`Bigenlight/diffusion_banana_in_pot_ee`](https://huggingface.co/Bigenlight/diffusion_banana_in_pot_ee) — EE (10-D) diffusion policy @100k — research artifact, needs IK, not wired to the robot
 - [`Bigenlight/banana_in_pot_hilserl`](https://huggingface.co/Bigenlight/banana_in_pot_hilserl) — HIL-SERL prep artifacts
 
 **Code**
-- Deploy stack (submodule): [`Bigenlight/gello_software`](https://github.com/Bigenlight/gello_software) — real-UR7e ROS2 **Humble** deploy, branch `feat/gello-ur7e-humble-22.04`
+- Deploy stack (submodule): [`Bigenlight/gello_software`](https://github.com/Bigenlight/gello_software) — real-UR7e ROS2 **Humble** deploy, branch `feat/gello-ur7e-humble-22.04`; diffusion deploy runbook lives at `gello_software/docs/ros2/GELLO_UR7E_DIFFUSION_DEPLOY.md`
 - Upstream [lerobot](https://github.com/huggingface/lerobot) pinned @ `8a74e0a` (0.6.1) — cloned editable by `setup.sh`, not a submodule
 
 **In-repo docs**
@@ -90,6 +113,7 @@ setsid nohup ./train_diffusion_joint_valdiag.sh </dev/null >train.log 2>&1 &
 | [docs/ACT_OVERFIT_DIAGNOSIS.md](docs/ACT_OVERFIT_DIAGNOSIS.md) | ACT train/val diagnostic — loss and open-loop MAE agree (best ≈ 30k). |
 | [docs/DIFFUSION_PLAN.md](docs/DIFFUSION_PLAN.md) | Execution-ready spec for the diffusion JOINT→EEF diagnostic. |
 | [docs/DIFFUSION_JOINT_OVERFIT.md](docs/DIFFUSION_JOINT_OVERFIT.md) | **The headline finding**: `eval_loss` rises while open-loop MAE improves. |
+| [docs/DIFFUSION_EE_OVERFIT.md](docs/DIFFUSION_EE_OVERFIT.md) | EE (10-D) diffusion overfit diagnostic — same `eval_loss`-misleading lesson; open-loop conclusion: no overfit through 100k, best = 80k–100k plateau. |
 | [docs/DEPLOY_REPO_DECISION.md](docs/DEPLOY_REPO_DECISION.md) | Repo-setup decision for real-robot ACT/HIL-SERL deploy on the UR7e. |
 | [docs/DEPLOY_UR.md](docs/DEPLOY_UR.md) | How to run the trained ACT policy on the real UR arm. |
 | [docs/HILSERL_PREP_PLAN.md](docs/HILSERL_PREP_PLAN.md) | Offline, robot-free plan up to HIL-SERL online RL. |
