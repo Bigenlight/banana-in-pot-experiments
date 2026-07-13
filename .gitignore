@@ -28,3 +28,6 @@ scratch_*
 # git tracks it as a gitlink, not as a working tree.
 # NOTE: results/ and docs/ are intentionally NOT ignored — they are tracked
 # reference content (small eval outputs, report assets, and markdown docs).
+
+# stray HOME dir from container runs (HOME=/workspace) — contains uv credentials
+.local/

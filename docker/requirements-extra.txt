@@ -1,0 +1,9 @@
+# Container-only extra deps (NOT in the upstream requirements-lock.txt).
+#
+# nvidia-npp-cu12: NVIDIA Performance Primitives. torchcodec's CUDA video decoder
+# links libnppicc.so.12 / libnppig.so.12 etc. On the original box these came from
+# a SYSTEM CUDA install, so they are absent from the pip freeze. In this thin
+# python:3.12 container there is no system CUDA, so we install NPP via pip and put
+# it on LD_LIBRARY_PATH via docker/entrypoint.sh. Pinned to the version resolved
+# against the cu128 stack (soname major .12 is what torchcodec needs).
+nvidia-npp-cu12==12.4.1.87

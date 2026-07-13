@@ -1,0 +1,42 @@
+[info] loading checkpoint: outputs/train/act_ee_val_diag/checkpoints/030000/pretrained_model on cuda
+Loading weights from local directory
+[info] action dims (10): ['x', 'y', 'z', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'grip']
+[info] cameras: ['observation.images.cam1', 'observation.images.cam2']
+[info] evaluating episodes: [45, 46, 47, 48, 49, 50]
+[info] episode 45: T=470  overallL1=0.06745  gripAcc=0.949
+[info] episode 46: T=417  overallL1=0.05362  gripAcc=0.947
+[info] episode 47: T=351  overallL1=0.02835  gripAcc=0.994
+[info] episode 48: T=388  overallL1=0.06659  gripAcc=0.889
+[info] episode 49: T=552  overallL1=0.07759  gripAcc=0.810
+[info] episode 50: T=539  overallL1=0.06502  gripAcc=0.917
+
+==============================================================================
+OPEN-LOOP OFFLINE EVAL  (predicted action vs dataset ground-truth)
+==============================================================================
+ episode     T    poseMAE    poseRMSE   gripMAE  gripAcc  overallL1
+-------------------------------------------------------------------
+      45   470    0.06803     0.09373   0.06225    0.949    0.06745
+      46   417    0.05203     0.06815   0.06794    0.947    0.05362
+      47   351    0.02990     0.03784   0.01435    0.994    0.02835
+      48   388    0.06158     0.08292   0.11172    0.889    0.06659
+      49   552    0.06389     0.09360   0.20087    0.810    0.07759
+      50   539    0.06231     0.08519   0.08941    0.917    0.06502
+-------------------------------------------------------------------
+    MEAN  2717    0.05775     0.08283   0.09755    0.911    0.06173
+==============================================================================
+
+Per-dimension MAE / RMSE (aggregated over all evaluated frames):
+       dim          MAE         RMSE   units
+         x      0.02921      0.03878   m
+         y      0.02677      0.03999   m
+         z      0.03650      0.05103   m
+        r1      0.09498      0.13099   6d
+        r2      0.04843      0.08054   6d
+        r3      0.07333      0.09605   6d
+        r4      0.04864      0.08193   6d
+        r5      0.08175      0.12038   6d
+        r6      0.08016      0.10582   6d
+      grip      0.09755      0.28045   grip
+
+[info] wrote results/eval_ee_act_030000/eval_ep45_traj.png
+[info] wrote results/eval_ee_act_030000/eval_ep46_traj.png
