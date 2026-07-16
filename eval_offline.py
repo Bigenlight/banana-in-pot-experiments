@@ -108,6 +108,12 @@ def apply_scheduler_overrides(cfg, scheduler, num_inference_steps):
         cfg.noise_scheduler_type = scheduler
     if num_inference_steps is not None and hasattr(cfg, "num_inference_steps"):
         cfg.num_inference_steps = int(num_inference_steps)
+    # Flow-matching policies (e.g. multi_task_dit objective=flow_matching) use an ODE
+    # integrator with `num_integration_steps` instead of a denoising scheduler. Let the
+    # same --num-inference-steps flag control it (analogue of DDIM-10 for diffusion).
+    # hasattr-guarded, so this is a no-op for ACT/diffusion which lack the field.
+    if num_inference_steps is not None and hasattr(cfg, "num_integration_steps"):
+        cfg.num_integration_steps = int(num_inference_steps)
 
 
 # ---- Image transform: identical Resize used at training time ----------------

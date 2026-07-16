@@ -98,6 +98,7 @@ setsid nohup ./train_diffusion_joint_valdiag.sh </dev/null >train.log 2>&1 &
 - [`Bigenlight/act_banana_in_pot`](https://huggingface.co/Bigenlight/act_banana_in_pot) — pretrained ACT policy
 - [`Bigenlight/diffusion_banana_in_pot_joint`](https://huggingface.co/Bigenlight/diffusion_banana_in_pot_joint) — pretrained JOINT (7-D) diffusion policy, deployed
 - [`Bigenlight/diffusion_banana_in_pot_ee`](https://huggingface.co/Bigenlight/diffusion_banana_in_pot_ee) — EE (10-D) diffusion policy @100k — research artifact, needs IK, not wired to the robot
+- [`Bigenlight/flow_matching_banana_in_pot_joint`](https://huggingface.co/Bigenlight/flow_matching_banana_in_pot_joint) — JOINT (7-D) **flow-matching** policy (`multi_task_dit`) @70k — **best JOINT open-loop MAE of the three families**
 - [`Bigenlight/banana_in_pot_hilserl`](https://huggingface.co/Bigenlight/banana_in_pot_hilserl) — HIL-SERL prep artifacts
 
 **Code**
@@ -114,6 +115,8 @@ setsid nohup ./train_diffusion_joint_valdiag.sh </dev/null >train.log 2>&1 &
 | [docs/DIFFUSION_PLAN.md](docs/DIFFUSION_PLAN.md) | Execution-ready spec for the diffusion JOINT→EEF diagnostic. |
 | [docs/DIFFUSION_JOINT_OVERFIT.md](docs/DIFFUSION_JOINT_OVERFIT.md) | **The headline finding**: `eval_loss` rises while open-loop MAE improves. |
 | [docs/DIFFUSION_EE_OVERFIT.md](docs/DIFFUSION_EE_OVERFIT.md) | EE (10-D) diffusion overfit diagnostic — same `eval_loss`-misleading lesson; open-loop conclusion: no overfit through 100k, best = 80k–100k plateau. |
+| [docs/FM_JOINT_RESULTS.md](docs/FM_JOINT_RESULTS.md) | **Flow-matching (`multi_task_dit`) JOINT results** — 3rd policy family; `eval_loss`-vs-open-loop divergence reproduced; **FM beats Diffusion & ACT** (best poseMAE 0.0735 @ 70k). |
+| [docs/FM_JOINT_MODEL_CARD.md](docs/FM_JOINT_MODEL_CARD.md) | Flow-matching model card — how it was trained + how to use/deploy (mirror of the HF card). |
 | [docs/DEPLOY_REPO_DECISION.md](docs/DEPLOY_REPO_DECISION.md) | Repo-setup decision for real-robot ACT/HIL-SERL deploy on the UR7e. |
 | [docs/DEPLOY_UR.md](docs/DEPLOY_UR.md) | How to run the trained ACT policy on the real UR arm. |
 | [docs/HILSERL_PREP_PLAN.md](docs/HILSERL_PREP_PLAN.md) | Offline, robot-free plan up to HIL-SERL online RL. |
