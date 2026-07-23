@@ -1,0 +1,37 @@
+diff --git a/src/lerobot/policies/diffusion/configuration_diffusion.py b/src/lerobot/policies/diffusion/configuration_diffusion.py
+index ed04ab54..861439ec 100644
+--- a/src/lerobot/policies/diffusion/configuration_diffusion.py
++++ b/src/lerobot/policies/diffusion/configuration_diffusion.py
+@@ -115,6 +115,14 @@ class DiffusionConfig(PreTrainedConfig):
+     # which avoids excessive padding and leads to improved training results.
+     drop_n_last_frames: int = 7  # horizon - n_action_steps - n_obs_steps + 1
+ 
++    # Training precision. "float32" (default) = full fp32 (original behavior). "float16" or
++    # "bfloat16" activate HF Accelerate mixed precision in the train loop
++    # (lerobot_train.py:215-216 maps this -> Accelerator(mixed_precision=...)). Without this
++    # field the getattr(cfg.policy,"dtype",None) there is always None -> fp32. bf16 is the
++    # safer choice for the unbounded epsilon-regression loss at batch 8; fp16 gets an
++    # automatic Accelerate GradScaler. (Added locally for the banana-in-pot fp16 experiments.)
++    dtype: str = "float32"
++
+     # Architecture / modeling.
+     # Vision backbone.
+     vision_backbone: str = "resnet18"
+diff --git a/src/lerobot/policies/multi_task_dit/configuration_multi_task_dit.py b/src/lerobot/policies/multi_task_dit/configuration_multi_task_dit.py
+index 33be3113..8a93a8ee 100644
+--- a/src/lerobot/policies/multi_task_dit/configuration_multi_task_dit.py
++++ b/src/lerobot/policies/multi_task_dit/configuration_multi_task_dit.py
+@@ -30,6 +30,13 @@ class MultiTaskDiTConfig(PreTrainedConfig):
+     for multi-task robot learning with text and vision conditioning.
+     """
+ 
++    # Training precision. "float32" (default) = full fp32. "bfloat16"/"float16" activate HF
++    # Accelerate mixed precision in the train loop (lerobot_train.py:215-216). Without this
++    # field getattr(cfg.policy,"dtype",None) is always None -> fp32. bf16 is strongly
++    # preferred here: CLIP ViT + DiT attention have documented fp16 NaN/overflow history.
++    # (Added locally for the banana-in-pot fp16/bf16 experiments.)
++    dtype: str = "float32"
++
+     n_obs_steps: int = 2  # Number of observation steps for temporal context
+     horizon: int = 32  # Number of action steps to predict
+     n_action_steps: int = 24  # Actions executed per policy call (~0.8s at 30Hz)
